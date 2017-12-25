@@ -3,6 +3,7 @@ package com.aopanis.wifidirecttest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.NetworkInfo;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
@@ -45,6 +46,20 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             Log.d(MainActivity.TAG, "onReceive: P2P peers changed");
 
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
+
+            if(manager == null){
+                return;
+            }
+
+
+            NetworkInfo networkInfo = (NetworkInfo) intent
+                    .getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
+
+            ConnectionListener connectionListener = new ConnectionListener(activity);
+
+            if(networkInfo.isConnected()){
+                manager.requestConnectionInfo(channel, connectionListener);
+            }
 
             // Connection state changed! We should probably do something about
             // that.

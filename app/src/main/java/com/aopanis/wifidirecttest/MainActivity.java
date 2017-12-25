@@ -4,13 +4,18 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.WpsInfo;
+import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -60,7 +65,6 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
 
     }
 
-
     public void setIsWifiP2pEnabled(boolean isWifiP2pEnabled){
         this.isWifiP2pEnabled = isWifiP2pEnabled;
     }
@@ -70,7 +74,8 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+        ActivityCompat.requestPermissions(this, new String[]{
+                Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
 
         lvConnections = (ListView)findViewById(R.id.lvConnections);
         peersAdapter = new ArrayAdapter<WifiP2pDevice>(this,
@@ -78,11 +83,8 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
         lvConnections.setAdapter(peersAdapter);
 
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
 
@@ -107,6 +109,39 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
             public void onFailure(int reasonCode) {
                 // Code for when the discovery initiation fails goes here.
                 // Alert the user that something went wrong.
+            }
+        });
+        setupListViewListener();
+    }
+
+
+    private void setupListViewListener() {
+        lvConnections.setOnItemClickListener(
+                new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        connect(i);
+                    }
+                }
+        );
+    }
+
+    public void connect(int i) {
+        WifiP2pDevice device = peers.get(i);
+        WifiP2pConfig config = new WifiP2pConfig();
+        config.deviceAddress = device.deviceAddress;
+        config.wps.setup = WpsInfo.PBC;
+        mManager.connect(mChannel, config, new WifiP2pManager.ActionListener(){
+
+            @Override
+            public void onSuccess() {
+
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                Toast.makeText(MainActivity.this, "Connection Failure",
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
