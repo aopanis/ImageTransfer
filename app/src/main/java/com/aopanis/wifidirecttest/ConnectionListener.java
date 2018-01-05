@@ -18,7 +18,8 @@ public class ConnectionListener implements WifiP2pManager.ConnectionInfoListener
 
     @Override
     public void onConnectionInfoAvailable(final WifiP2pInfo info) {
-        Toast.makeText(activity, "Connection Changed", Toast.LENGTH_SHORT).show();
+        Toast.makeText(activity, "Connection Success: " + info.groupFormed,
+                Toast.LENGTH_SHORT).show();
     }
 
 }
