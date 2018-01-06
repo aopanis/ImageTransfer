@@ -1,9 +1,11 @@
 package com.aopanis.wifidirecttest;
 
 import android.Manifest;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -20,12 +22,21 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.common.io.ByteStreams;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements WifiP2pManager.PeerListListener {
 
     public static final String TAG = "MainActivity";
+
 
     private final IntentFilter intentFilter = new IntentFilter();
     private List<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
@@ -75,7 +86,9 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
         setContentView(R.layout.activity_main);
 
         ActivityCompat.requestPermissions(this, new String[]{
-                Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
 
         lvConnections = (ListView)findViewById(R.id.lvConnections);
         peersAdapter = new ArrayAdapter<WifiP2pDevice>(this,
@@ -130,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
         WifiP2pDevice device = peers.get(i);
         WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = device.deviceAddress;
+        config.groupOwnerIntent = 0;
         config.wps.setup = WpsInfo.PBC;
         mManager.connect(mChannel, config, new WifiP2pManager.ActionListener(){
 
